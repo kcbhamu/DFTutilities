@@ -1,0 +1,149 @@
+// reduced and cartisean coordinate translator
+clear; clc; exec(PiLib);
+// Parameters ==========================================================
+work_dir=[]
+prim_vec=..
+[     2.70350    0.00000  -15.38550
+0.00000    5.41200    0.00000
+2.70350    0.00000   15.38550
+]
+sublatt=..
+[ 
+0.17271      0.44700      0.27669 
+-0.17271     -0.44700     -0.27669 
+0.27669      0.05300      0.17271 
+-0.27669     -0.05300     -0.17271 
+0.11286      0.00000      0.39534 
+-0.11286      0.00000     -0.39534 
+0.39534      0.50000      0.11286 
+-0.39534      0.50000     -0.11286 
+0.05266      0.50000      0.44654 
+-0.05266      0.50000     -0.44654 
+0.44654      0.00000      0.05266 
+-0.44654      0.00000     -0.05266 
+0.00000      0.00000     -0.50000 
+0.50000      0.50000      0.00000 
+-0.19690     -0.25000      0.19690 
+0.19690      0.25000     -0.19690 
+-0.19690      0.25000      0.19690 
+0.19690     -0.25000     -0.19690 
+0.30090      0.25000     -0.30090 
+-0.30090     -0.25000      0.30090 
+0.30090     -0.25000     -0.30090 
+-0.30090      0.25000      0.30090 
+0.16770      0.42800      0.40630 
+-0.16770     -0.42800     -0.40630 
+0.40630     -0.07200      0.16770 
+-0.40630      0.07200     -0.16770 
+0.10430      0.15000      0.21370 
+-0.10430     -0.15000     -0.21370 
+0.21370      0.35000      0.10430 
+-0.21370     -0.35000     -0.10430 
+]
+inp_type='red'  // 'red' or 'cart'
+out_type='cart'  // 'red' or 'cart' (control code_output format)
+atom_spec=['4*Bi','4*Sr','4*Cu','2*Ca','16*O'] // e.g ['1*Bi','2*Sr']
+code_output='elk' // 'abt' / 'espresso' / 'elk' 
+
+xsf_output='on'  //'on' / 'off' (xsf always in cart coordinate)
+xsf_title='BSCCO_org'
+// Main ================================================================
+print
+work_dir=PIL_dir_path(work_dir);
+atom_type=[];
+if code_output=='elk' & out_type=='cart' then
+    printf('Elk only accepts out_type==''red''\n');
+    printf('reset out_type to ''red''\n');
+    out_type='red'
+end
+
+for n=1:length(length(atom_spec))
+    asterisk_loc=find(strsplit(atom_spec(n))=='*')
+    atom_type=cat(1,atom_type,..
+    [part(atom_spec(n),1:asterisk_loc-1),..
+    part(atom_spec(n),asterisk_loc+1:length(atom_spec(n)))])
+end
+
+if inp_type=='red' & out_type=='cart' then
+    sublatt_out=PIL_red_cart_conv(prim_vec, sublatt, inp_type);
+elseif inp_type=='cart' & out_type=='red'
+    sublatt_out=PIL_red_cart_conv(prim_vec, sublatt, inp_type);
+else
+    sublatt_out=sublatt;
+end
+// translate atom_spec
+atom_spec=PIL_atom_spec_conv(atom_spec);
+if length(length(atom_spec))~=length(sublatt(:,1)) then
+    disp('Error: atom_spec and sublatt are inconsistend!');
+    abort
+end
+
+// geneate xsf files
+if xsf_output=='on' then
+    if inp_type=='red' then
+        sublatt_xsf=PIL_red_cart_conv(prim_vec, sublatt, inp_type);
+        PIL_crystal_xsf(work_dir+xsf_title,prim_vec,atom_spec,sublatt_xsf);
+    elseif inp_type=='cart'
+        PIL_crystal_xsf(work_dir+xsf_title,prim_vec,atom_spec,sublatt);
+    end
+end
+
+// generate screen display
+ntype=length(length(atom_type(:,1)));
+natom=length(length(atom_spec))
+select code_output
+case 'espresso'
+    printf('\n');
+    printf('<< Espresso atom outputs >>:\n');
+    printf('ibrv = 0,\n')
+    printf('celldm(1) = 1.89,\n')
+    printf('ntyp = %d,\n',ntype)
+    printf('nat = %d,\n',length(length(atom_spec)))
+    printf('CELL_PARAMETERS alat\n')
+    printf('    %9.5f  %9.5f  %9.5f\n',prim_vec)
+    select out_type
+    case 'cart'
+        printf('ATOMIC_POSITIONS angstrom\n')
+    case 'red'
+        printf('ATOMIC_POSITIONS crystal\n')
+    else
+        disp('Error: out_type is wrong');
+    end
+    printf('%2s    %9.5f    %9.5f    %9.5f  0  0  0\n',..
+    atom_spec',sublatt_out);    
+case 'abt'   
+    printf('\n');
+    printf('<< ABINIT atom outputs >>:\n');
+    printf('ntype %d\n',ntype);
+    printf('znucl '+strcat(repmat('? ',ntype,1))+'\n')
+    printf('natom %d\n',natom)
+    printf('typat '+strcat(repmat('%d*%d ',1,ntype))+'\n',..
+    matrix(cat(2,eval(atom_type(:,1)),[1:ntype]')',1,-1));
+    printf('acell 3*1 angstrom\n')
+    printf('rprim\n');
+    printf('  %9.5f  %9.5f  %9.5f\n',prim_vec)
+    select out_type 
+    case 'cart'
+        printf('xangst\n')
+    case 'red'
+        printf('xred\n')    
+    end
+    printf('%9.5f    %9.5f    %9.5f\n',sublatt_out)
+case 'elk'
+    printf('\n')
+    printf('<< Elk atom outputs >>:\n');
+    printf('avec\n');
+    printf('  %9.5f  %9.5f  %9.5f\n',prim_vec)
+    printf('atoms\n');
+    printf('  %d       :nspecies\n',ntype)
+    for n=1:ntype
+            printf('  ''%2s.in''   :spfname\n',atom_type(n,2));
+            printf('  %d        :natoms; atposl, bfcmt below\n',..
+            eval(atom_type(n,1)));
+            printf('%9.5f %9.5f %9.5f  0.0 0.0 0.0\n',..
+            sublatt_out(find(atom_spec==atom_type(n,2)),:))
+    end
+end
+
+
+

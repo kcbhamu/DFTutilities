@@ -1,0 +1,78 @@
+python筆記:
+1. 資料結構: 
+	串列: A=[1,2,3] 內容可變 
+	序對: A=(1,2,3) 內容不可變
+	字典: A={1:2.0,"3":[4]} key應該用不可變, value可變
+	陣列索引用中括弧表示: A[0] ,從0起跑
+	找字典內容: A[1]=2.0, A["3"]=[4]
+	
+2. 命名習慣:
+	class 最好用大寫開頭 Class_Name,內部屬性與方法則小寫
+
+3. 運算子:
+	邏輯: and , or , not
+	算數: +, -, *, /, %(餘數), **指數
+	關係: ==, !=, >, >=, < , <=
+
+4. 指派:
+	把值透過指派運算子一路從右往左指派
+	ex: a=2, a+=3(3往左指派,給加號,故a=a+3)
+		f=a!=b 即 f=(a!=b)
+		
+5. 條件判斷: 
+   格式: python的縮排有意義,表區塊. 無end敘述,所以必須注意!
+   if-elif-else:  if xxxx :   
+   從if到冒號中間表條件
+   
+6. 迴圈:
+	* while xxxx :
+     同樣,while後,冒號前,表條件,用縮排表區塊.
+	* break(跳出迴圈), continue(跳過該值)
+	* for i in range(10, 0, -1):
+	 for 敘述用in range(a,b,c)搭配,後接冒號
+
+7. 函數:
+	* def big(a,b):
+		 函數內容
+		 return a
+	  def宣告變數,變數名稱big,計算完後回傳某一變數
+	  注意,python的函數是call by address
+
+8. 模組:
+	建立另一個.py檔,裡面有諸多變數與函數,呼叫時使用
+	import filename
+	則filename底下的每個變數與函數,用"."來使用
+	ex: xmath.PI, xmath.func1
+
+9. 串列操作:
+	*a.append(追加元素), a.extend(串列合併), a.insert(資料插入), 
+	 a.index(取得第一次出現的index),a.remove(刪除第一次出現)
+	 a.pop(刪除值)
+	*其他方法:
+	a.extend --> a+[內容] , a.pop --> a[n]=[] 
+	a.insert --> a[n:]=[內容]
+	a.pop --> del a[n]
+	a.pop
+	*len(a)(串列長度)
+	*5 in a (判斷5是否出現在a中), 5 not in a (判斷5不再a中)
+	
+	
+10. 檔案讀寫
+    *注意,python中,對於目錄必須統一用"/",以免造成跳脫字元誤會,例如:"\n"
+	*fid1=open('abc.txt','r'),除'r',也有'w','a'
+	*讀字元: fid1.read(n), 原始位置: fid1.seek(0), 讀整行: fid1.readline()
+	*寫入f.write('abc')
+	*檔案結尾:
+		f = file('poem.txt')
+		# if no mode is specified, 'r' mode is assumed by default
+		while True:
+			line = f.readline()
+			if len(line) == 0: # Zero length indicates EOF
+				break
+			print line,
+			# Notice comma to avoid automatic newline added by Python
+		f.close() # close the file
+	
+	
+	
+   
