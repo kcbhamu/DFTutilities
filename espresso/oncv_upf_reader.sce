@@ -3,8 +3,8 @@
 clear; clc; exec(PiLib);
 // Parameter ===========================================================
 work_dir=[]//'C:\MyDrive\Work\ONCV\Te'
-input_name='Os_oncv_pbe_r.out'
-output_name='Os_oncv_pbe_r.upf'
+input_name='Pt_ONCV_PBE_fr.upf'
+output_name='Pt_ONCV_PBE_fr.upf'
 pp_type='upf'   // 'psp8' / 'upf'
 // Main ================================================================
 work_dir=PIL_dir_path(work_dir);
